@@ -1,10 +1,10 @@
 from flask import render_template, jsonify, json
 from ourpackage.models import User, Tweet
-from ourpackage import app, db
-from ourpackage.dash import layout
+from ourpackage import db, app
+from ourpackage.dash import app
 
-
-@app.server.route('/go-to-dash')
+#define a second route to display our dashboard
+@app.server.route('/go-to-dashboard')
 def dashboard():
     return app.index()
 

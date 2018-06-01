@@ -1,4 +1,4 @@
-from pythonflaskapppackagestructure import app
+from ourpackage import app
 
 if __name__ == "__main__":
     app.run_server(debug=True)

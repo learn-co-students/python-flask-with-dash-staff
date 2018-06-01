@@ -1,126 +1,145 @@
 
-# Flask and Flask-SQLAlchemy Lab Part 2
+# Using Dash and Flask together
 
 ## Introduction
-In this lab we are going to practice working with creating a RESTful web app that returns HTML about Tweets and Users. In this domain Users will have many Tweets and Tweets will, therefore, belong to a User. We already have our app's database and RESTful routes set up to return information about our resources. We are going to build on what we already have to add in some templates and focus on creating some views with HTML for our users and tweets. Let's get started!
+In this lab we are going to be using our knowledge of flask apps and dash apps to combine them into one! This may sound a little confusing, but remember that dash is actually built on flask among other things. So, these two frameworks work together more easily than we might initially think. By the end of this lab, we are going to have an app that has routes to return json data, html templates, AND a dash dashboard that provides us a page to showcase our data visualization skills.
 
 ## Objectives
-* Create templates that display data for individual and collections of users and tweets
-* Define RESTful Routes that return HTML for Users
-* Define RESTful Routes that return HTML for Tweets
-* **Bonus:** Define RESTful Rotues that return HTML for related resources
+* Restructure an existing flask app to use dash
+* Create a dash layout and add a second page for a dashboard
+* Add a graph to the new dashboard
 
-> **Note:** remember to seed your database by running `python seed.py` from your terminal so that your database will be populated with the necessary tables and some pre-populated data.
+## Restructuring a Flask App
 
-## Defining RESTful Routes for User Data
-
- Our routes for our User resourse should follow REST convention and return HTML for:
-    * A list of all user objects
-    * A single user object whose `id` matches the id in the URL
-    * A list of users with a whose `username` contains the string in the URL
-
-## Defining RESTful Routes for Tweet Data
-
-Our routes for our Tweet resource should follow REST convention and return HTML for:
-* A list of all tweet objects
-* A single tweet object that has the same `id` as the id in the URL
-
-## Create Templates for the User Resource
-
-Given the above routes, we will need to create four (4) HTML templates. In our templates directory, we have four files named, tweets.py, tweet_show.py, users.py, and user_show.py. The files with the pluralized resource name will be our templates for a collection of the given resource and the files named `[resource]_show` will be for a single object of the given resource. 
-
-### Single User:
-A single user's page should have an `h3` tag for their `username`, a `p` tag for their `id`, an `h4` tag that has the text "Tweets:" followed by an unordered list containing all of the user's tweets each list item showing the tweet's `user_id` and content, which is a tweet's `text`.
-
-**example:**
-
-<h3>Username: "USERNAME"</h3>
-<p>ID: "ID"</p>
-<h4>Tweets:</h4>
-<ul>
-    <li>
-        <p>User ID: "TWEET USER_ID"</p> 
-        <p>Content: "TWEET CONTENT"</p>
-    </li>
-</ul>
-
-### Multiple Users:
-When multiple users are requested, the format should be an ordered list with each list item containing an `h3` tag showing the user's `username`, an `h4` tag showing the user's `id`, and another `h4` tag showing the number of `tweets` that user has tweeted.
-
-**example:**
-
-<ol>
-    <li>
-        <h3>Username: "USERNAME"</h3>
-        <h4>ID: "ID"</h4>
-        <h4>Tweet Count: "NUMBER OF TWEETS FROM USER"</h4>
-    </li>
-    <li>
-        <h3>Username: "USERNAME"</h3>
-        <h4>ID: "ID"</h4>
-        <h4>Tweet Count: "NUMBER OF TWEETS FROM USER"</h4>
-    </li>
-</ol>
-
-
-### Single Tweet:
-A single tweet's page should have an `h4` tag for its author (or the username of the user who wrote the tweet), and a `p` tag for its content or `text`, and another `p` tag showing the tweet's `user_id`.
-
-**example:**
-
-<h4>Author: "TWEET'S AUTHOR'S USERNAME</h4>
-<p>Content: "TWEET CONTENT"</p>
-<p>User ID: "TWEET USER_ID"</p>
-
-### Multiple Tweets:
-When multiple tweet's are requested the page should have an undordered list showing each tweet. Each list item should have an `h4` tag for the tweet's author (or the username of the user who wrote the tweet), and a `p` tag for its content or `text`.
-
-**example:**
-
-<ul>
-    <li>
-        <h4>Author: "TWEET'S AUTHOR'S USERNAME"</h4> 
-        <p>Content: "TWEET CONTENT"</p>
-    </li>
-    <li>
-        <h4>Author: "TWEET'S AUTHOR'S USERNAME"</h4> 
-        <p>Content: "TWEET CONTENT"</p>
-    </li>
-</ul>
-
-## BONUS:
-
-## Defining Nested RESTful Routes that Display Related Resources
-
-Since we are dealing with a has many / belongs to relationship we will want to define routes that return an HTML template that displays the data for the requested related resource(s). We will want routes that, again follow the REST convention and return an HTML template for:
-    * Tweets that belong to a user by `user_id`
-    * Tweets that belong to a user by a user's `name`   
-    * A single User that is associated to a tweet by its `id` 
-
+Alright, so our flask app from a previous lab is currently set up as a package in our main directory, where we have our run file. Inside our package, which for the purposes of this lab is named `ourpackage`, we have our models and routes defined in their own files and our template files defined in the templates directory, and our `__init__.py` file looks like the following:
 
 ```python
-class Driver:
+# import Flask, jsonify, render_template, and json from flask
+from flask import Flask
+# import SQLAlchemy from flask_sqlalchemy
+from flask_sqlalchemy import SQLAlchemy
 
-    def __init__(self, first, last, favorite_hobby="driving"):
-        self.first = first
-        self.last = last
-        self.favorite_hobby = favorite_hobby
 
+# initialize new flask app
+app = Flask(__name__)
+# add configurations and database
+app.config['DEBUG'] = True
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+# connect flask_sqlalchemy to the configured flask app
+db = SQLAlchemy(app)
+
+#import our routes after our database has been configured
+from ourpackage import routes
 ```
 
+If we look around it seems like not much has changed, and that is because it hasn't yet! But we can see our flask app is currently assinged to our `app` variable which is problematic since that is the set up we had for our dash app as well. That is okay, because as we talked about before, dash is built on flask. So, we can mostly keep this set up, but we'll need to instantiate our dash app and change some names around. Basically what we are going to be doing is embedding our flask app into our new dash app. This may sound a little backwards, but it makes sense given the set up. Our flask app is going to serve as our logic for handing server requests. So, we are going to rename `app` to `server`. Then when we are creating a new dash app, we can pass an optional argument in for the server. Check it out:
 
 ```python
-x = Driver("hey", "last")
-x
+# import Flask, jsonify, render_template, and json from flask
+from flask import Flask
+# import SQLAlchemy from flask_sqlalchemy
+from flask_sqlalchemy import SQLAlchemy
+# import dash framework
+import dash
+
+# initialize new flask app
+server = Flask(__name__)
+# add configurations and database
+server.config['DEBUG'] = True
+server.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+# connect flask_sqlalchemy to the configured flask app
+db = SQLAlchemy(server)
+
+#create new dash app and use existing flask app as our dash app's server
+app = dash.Dash(__name__, server=server)
+
+#import our routes after our database has been configured
+from ourpackage import routes
 ```
 
+So, we are assigning our new dash app to the variable `app` and telling it to use our flask application as it's server. If we didn't already have a flask application set up, we could also leave out the server argument and the dash app would create a new flask server for us, as it did in our stand alone dash application. 
 
+We can think of the server as an attribute of the flask app -- this is why we said we would embed the server in the dash app. Either way, once the server is hooked up to the new dash app, we can reference it in two ways; assigning it to a variable, `server` like we have in the example above, or by writing `app.server`. 
 
+After we have configured our new dash app, we need to think about how the changes we just made affect the rest of our application. We must have at least one file that is importing our `app`, right? Let's check -- it looks like our models are importing just our db from `ourpakage`, but the routes file is importing the `app`. We were using our flask instance to create routes on the server but we were referencing this flask instance as `app`, so, we'll need to change this.
 
-    <__main__.Driver at 0x1107be5c0>
+We can do one of two things:
+1. we can change the import to bring in both `app` and `server`, if we have defined a `server` variable 
+2. We can change our decorators from `@app.route([ROUTE])` to `@app.server.route([ROUTE])`
 
+In general, we should justify all our coding decisions with some logic and reasoning. We could argue that keeping our import the same lessens the risk of an unforseen error somewhere else in our code such as an undefined variable. This is especially true in larger code bases where there are many more moving parts. Since this application is small and we know this is the only file importing the `app`, we can choose to either. As it is now part of the app, we will leave the import the same and define our routes by referencing they server with `@app.server.route([ROUTE])`. So, let's change all of the decorators in our routes file accordingly.
 
+The next tweak we need to make to our code is our `run.py` file, which is importing our `app` from `ourpackage`. In our flask app, our command to run our server is:
+   
+```python
+if __name__ == "__main__":
+    app.run()
+```
+
+However, since our `app` is now an instance of dash, we need to change this command to run our dash app, which is:
+
+```python
+if __name__ == "__main__":
+    app.run_server()
+```
+
+Now, if we run our application, it should function as it did before we made these changes. There is one caveat - if we visit any URL that is not defined on our server, our dash app will try to display our dash's layout. 
+
+To avoid this behavior and only display the routes that we define, we have to give a third argument to our dash instance, `url_base_pathname`. What this does is tell our dash app the route on which we want to display our dashboard. We will give it the route `'/dashboard'` for now, and our application will only display our dashboard at the `'/dashboard` route.
+
+Now that we have everything configured and working with our existing flask app, let's define a layout for our dash app!
+
+## Creating a Dash Layout in a Flask app
+
+The next step is to actually create our dashboard's layout. Previously, we had accomplished this by defining the layout below our new dash instance. However, there's a bit more going on in our new application. So, let's continue with our pattern of separation of concerns. Let's use the file named `dashboard.py`.
+
+To create our app's layout, we will need to import dash's html and core components as well as the dash app itself from ourpackage. 
+
+```python 
+import dash_core_components as dcc
+import dash_html_components as html
+from ourpackage import app
+```
+
+Alright, now we are ready to create our layout. Let's just start out with an h1 and a p tag. The h1 should say "Check it out! This app has flask AND dash!" and the p tag should read, "Adding some cool graph here soon:". 
+
+> <h1>Check it out! This app has flask AND dash!</h1>
+> <p>Adding some cool graph here soon:</p>
+
+Once we have our layout written up, let's try and go to our `'/dashboard'` route in the browser at `http://localhost:8050/dashboard`. This is what we will see:
+
+> **builtins.AttributeError**
+> AttributeError: 'NoneType' object has no attribute 'traverse'
+
+Oh no! What went wrong? The problem we have is that we are not importing our new app's layout anywhere. Our `routes.py` file is still loading our initial app instance from the `__init__.py` file. So, we will need to change this. We could import our `dashboard.py` file in our `__init__.py` file and then our route to `'/dashboard'` would work since our run file is now importing it when it runs the `__init__.py` file. However, we could imagine in the future that we might want to change our routes based on which graph we are showing. So, we wouldn't be able to keep our separation of concerns if we start defining routes somewhere else in our package. 
+
+Let's go back to the routes and change up our imports a bit. Let's import our app from the dashboard file. So, our imports will now look like this:
+
+```python
+from flask import render_template, jsonify, json
+from ourpackage.models import User, Tweet
+from ourpackage import db, app
+from ourpackage.dashboard import app
+```
+
+Notice we are importing our app from the `dashboard.py` file where we defined our layout. Now, if we refresh our web page, we will see our dashboard display. If we wanted to make further use of this import and wanted to define another route at which we can view the dashboard, we can simply define another route like we have before and call the `index` method on our app instance. 
+
+```python
+@app.server.route('/go-to-dashboard')
+def dashboard():
+    return app.index()
+```
+
+Now, if you visit the `'/go-to-dashboard'` route, we will see our dashboard displayed there too! Pretty neat stuff!
+
+## Adding a Graph
+
+Alright, it's time to add a graph to our dashboard and remove that `p` tag saying "Adding some cool graph here soon:". 
+
+**Remember:** *graph components come from dash's dash_core_components*
+
+Can use our uber fare data from before and set up a graph using dcc.Graph(). Remember all graphs must have an `id`. We can find our uber data in the uber_data.py file. Once we have our graph set up, we should be all good to check it out in our browser!
 
 ## Summary
 
-In this lab, we practiced creating HTML templates for our different views. Used our previously defined API routes to request resources, then parse our Response object into JSON and then pass it along to our templates to use and format in HTML. We used the REST convention to create common sense routes that describe to both the application and the client what information the page should be displaying. Finally, as a bonus, we used nested RESTful routes to display a resource's related resources (i.e. a particular user's tweets).
+In this lab, we were able to integrate our knowledge of flask apps with our knowledge of dash. We restructured our flask app a bit and turned it into a dash app. With this restructure, we were able to maintain all the original functionality of our flask app but add in a really cool new dashboard that we can use to display graphs and any type of data visualizations we want.

@@ -2,7 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from ourpackage import app
 
-layout = app.layout = html.Div(children=[
+app.layout = html.Div(children=[
     html.H1("Hey, this is my first dash app!"),
     html.P("Still under construction... :)"),
     dcc.Graph(
