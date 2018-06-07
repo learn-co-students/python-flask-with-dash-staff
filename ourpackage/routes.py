@@ -1,6 +1,6 @@
 from flask import render_template, jsonify, json
-from ourpackage.models import User, Tweet
-from ourpackage import db, app
+from ourpackage.models import User, Tweet, db
+# from ourpackage import db, app
 from ourpackage.dashboard import app
 
 #define a second route to display our dashboard
@@ -8,7 +8,7 @@ from ourpackage.dashboard import app
 def dashboard():
     return app.index()
 
-# JSON routes
+# created JSON routes
 @app.server.route('/api/users')
 def user_index():
     all_users = db.session.query(User).all()

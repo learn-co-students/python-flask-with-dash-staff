@@ -10,7 +10,7 @@ import dash
 server = Flask(__name__)
 # add configurations and database
 server.config['DEBUG'] = True
-server.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+server.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tweets.db'
 server.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # connect flask_sqlalchemy to the configured flask app
