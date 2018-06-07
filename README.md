@@ -84,14 +84,14 @@ Next, we will need to tweak our `run.py` file, where we are also importing `app`
    
 ```python
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
 ```
 
 However, since our `app` is now an instance of Dash, we need to change this command to run our Dash app like so:
 
 ```python
 if __name__ == "__main__":
-    app.run_server()
+    app.run_server(debug=True)
 ```
 
 Now, if we run our application, it should function as it did before we made these changes.
