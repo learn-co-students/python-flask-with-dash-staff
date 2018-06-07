@@ -1,5 +1,4 @@
-from __intit__.py import app, db
-from models import User, Tweet
+from models import User, Tweet, db
 
 # creates the User & Tweet models and tables in the database
 db.create_all()
