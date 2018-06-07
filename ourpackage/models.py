@@ -32,7 +32,8 @@ daniel.tweets = [Tweet(text="I love hogs"), Tweet(text="Hogs are the best way to
 jeff.tweets = [Tweet(text="Data Science is awesome"), Tweet(text="Python is pretty neat"), Tweet(text="Wishing I was chillin' in mexico rn")]
 rachel.tweets = [Tweet(text="RPDR is the best show"), Tweet(text="I just made the coolest NPM package!"), Tweet(text="Running is so fun!")]
 
-db.session.add(jeff)
-db.session.add(rachel)
-db.session.add(daniel)
-db.session.commit()
+if db.session.query(User).all() == []:
+    db.session.add(jeff)
+    db.session.add(rachel)
+    db.session.add(daniel)
+    db.session.commit()

@@ -8,7 +8,7 @@ from ourpackage.dashboard import app
 def dashboard():
     return app.index()
 
-# created JSON routes
+# created JSON routes for our API
 @app.server.route('/api/users')
 def user_index():
     all_users = db.session.query(User).all()
@@ -46,3 +46,48 @@ def find_users_tweets_by_user_name(user_name):
 @app.server.route('/api/tweets/<int:tweet_id>/user')
 def find_tweets_user(tweet_id):
     return jsonify(Tweet.query.filter(Tweet.id == tweet_id).first().user.to_dict())
+
+
+# created routes for the appropriate HTML Templates
+@app.server.route('/users')
+def users_index():
+    all_users = db.session.query(User).all()
+    all_users_dicts = [user.to_dict() for user in all_users]
+    return render_template('users.html', users=all_users_dicts)
+
+@app.server.route('/users/<int:id>')
+def user_show_by_id(id):
+    user = User.query.filter(User.id == id).first().to_dict()
+    return render_template('user_show.html', user=user)
+
+@app.server.route('/users/<name>')
+def user_show_by_name(name):
+    user = User.query.filter(User.username.like(name)).first().to_dict()
+    return render_template('user_show.html', user=user)
+
+@app.server.route('/tweets')
+def tweets_index():
+    all_tweets = Tweet.query.all()
+    all_tweets_dicts = [tweet.to_dict() for tweet in all_tweets]
+    return render_template('tweets.html', tweets=all_tweets_dicts)
+
+@app.server.route('/tweets/<int:id>')
+def tweet_show_by_id(id):
+    tweet = Tweet.query.filter(Tweet.id == id).first().to_dict()
+    return render_template('tweet_show.html', tweet=tweet)
+
+@app.server.route('/users/<int:user_id>/tweets')
+def find_tweets_by_user_id(user_id):
+    user_tweets = User.query.filter(User.id == user_id).first().to_dict()
+    return render_template('tweets.html', tweets=user_tweets['tweets'])
+
+@app.server.route('/users/<user_name>/tweets')
+def find_tweets_by_username(user_name):
+    user_tweets = User.query.filter(User.username == user_name.lower().title()).first().to_dict()
+    return render_template('tweets.html', tweets=user_tweets['tweets'])
+
+@app.server.route('/tweets/<int:tweet_id>/user')
+def find_user_by_tweet(tweet_id):
+    tweet = Tweet.query.filter(Tweet.id == tweet_id).first().to_dict()
+    user = User.query.filter(User.id == tweet['user_id']).first().to_dict()
+    return render_template('user_show.html', user=user)
