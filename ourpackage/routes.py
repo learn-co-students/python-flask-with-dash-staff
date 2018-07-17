@@ -1,7 +1,6 @@
 from flask import render_template, jsonify, json
-# from ourpackage import db, app
-from ourpackage.models import User, Tweet, db
-
+from ourpackage.models import User, Tweet
+# from ourpackage import app
 from ourpackage.dashboard import app
 
 
