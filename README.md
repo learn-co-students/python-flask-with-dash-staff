@@ -137,7 +137,6 @@ Let's go back to the routes and change up our imports a bit. Let's import our ap
 ```python
 from flask import render_template, jsonify, json
 from ourpackage.models import User, Tweet
-from ourpackage import db, app
 from ourpackage.dashboard import app
 ```
 
